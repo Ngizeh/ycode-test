@@ -1,31 +1,67 @@
-# Ycode Airtable
+# Installation Guide
+## Installation : Clone the Repository
 
-Hi! Are you ready to join our team working on an innovative and exciting project? We are looking for a full-stack developer.
+```
+<<<<<<< HEAD
+<<<<<<< HEAD
+ git clone https://github.com/Ngizeh/ycode-test.git
+=======
+ git clone https://Ngizeh@bitbucket.org/Ngizeh/ycode-test.git
+>>>>>>> 08f9966... Added Readme Installation guide, App Optimization and CSS/JS minification
+=======
+ git clone https://github.com/Ngizeh/ycode-test.git
+>>>>>>> f6fa924... Fixed Type
+```
 
-For the test assignment, we would like you to create a page which connects to Airtable and renders its data in a table format. It should also
-include a form which on submission, data will be posted back to Airtable and appear in your table.
 
-We have provided a base HTML layout for your table and form.
+Navigate to the project folder
 
-Use small commits and descriptive commit messages while working on the assignment. One commit solving one issue.
+```
+ cd path/to/your/project
+```
 
-We are expecting you to show both your back-end and front-end skills.
+On the project folder run the following command on the terminal
 
-There are a few things you should take into consideration:
-- The website should be able to withstand thousands of visitors at one time.
-- The blue colour used on the H1 should be swapped out for #3C8999.
-- Each field submitted via the form should be required except for photo.
-- Photo uploads should be of type JPG only and be no bigger than 100MB.
+```
+ composer install
+```
 
-We have also created an example Airtable dataset for you to use. We require you to copy this dataset to your own Airtable
-account by following these instructions:
-1. Navigate to the example dataset by following the link "https://airtable.com/shrsffH1u5qtGmviu/tblazX8u4wWhOJQnT".
-2. In the top right, you should see and click a button that says "Use this data".
-3. Create or use an existing Airtable account to select a workspace and a base of "Create a new base....".
-4. This data should now be copied into your own Airtable account.
-5. You will also have to generate an Airtable API key by visiting "https://airtable.com/account".
-6. After you have copied the example dataset and generated an API key, all other credentials can be found on "https://airtable.com/api". 
+<<<<<<< HEAD
 
----
+- Copy `.env.example` contents to `.env` 
 
-Use this repository as your starting point but **DO NOT** fork it. Create a private repository on GitHub for your application source code, push it and invite the username of "liamwalder" as a collaborator via "Settings > Manage access".
+=======
+Install the project dependencies
+
+
+```
+ npm install && npm run dev
+```
+
+ or
+
+ If you have yarn installed
+
+```
+ yarn install && yarn run dev
+```
+
+- Copy `.env.example` contents to `.env` 
+
+>>>>>>> 08f9966... Added Readme Installation guide, App Optimization and CSS/JS minification
+- Add your Airtable API KEY and fill your values
+
+```
+    AIRTABLE_KEY=//YOUR API KEY
+```
+- Run this command on your terminal
+(`php artisan key:generate`)
+
+Finally,serve your Application on localhost:) http://localhost:8000
+- If you don't have valet installed in your machine. Use this command on your terminal
+```
+  php artisan serve
+```
+
+### Note:
+Airtable requires the application to have secure(installed SSL) URL in order to preview the uploaded images.
