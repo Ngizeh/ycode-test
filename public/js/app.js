@@ -1922,14 +1922,181 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  props: [],
-  data: function data() {
-    return {};
+  props: {
+    team: Array
   },
-  mounted: function mounted() {},
-  watch: {},
-  methods: {}
+  data: function data() {
+    return {
+      form: {
+        name: "",
+        email: "",
+        photo: ""
+      },
+      loading: true,
+      imagePreview: false,
+      showPreview: false,
+      submitting: false,
+      success: false,
+      errors: "",
+      people: this.team
+    };
+  },
+  methods: {
+    onFileChange: function onFileChange(event) {
+      this.form.photo = event.target.files[0];
+      this.reader();
+    },
+    reader: function reader() {
+      var reader = new FileReader();
+      reader.addEventListener("load", function () {
+        this.showPreview = true;
+        this.imagePreview = reader.result;
+      }.bind(this), false);
+
+      if (this.form.photo) {
+        if (/\.(jpg)$/i.test(this.form.photo.name)) {
+          reader.readAsDataURL(this.form.photo);
+        }
+      }
+    },
+    fileDrop: function fileDrop(e) {
+      this.form.photo = e.dataTransfer.files[0];
+      this.reader();
+    },
+    submitForm: function submitForm() {
+      var _this = this;
+
+      this.submitting = true;
+      var data = new FormData();
+      var config = {
+        headers: {
+          "content-type": "multipart/form-data"
+        }
+      };
+      data.append("name", this.form.name);
+      data.append("email", this.form.email);
+      data.append("photo", this.form.photo);
+      axios.post("/people", data, config).then(function (response) {
+        _this.errors = "";
+        _this.success = true;
+        setTimeout(function () {
+          _this.form = {};
+          _this.success = false;
+          _this.showPreview = false;
+        }, 4000);
+        _this.submitting = false;
+
+        _this.refreshData();
+      })["catch"](function (error) {
+        _this.submitting = false;
+        _this.errors = error.response.data.errors;
+      });
+    },
+    defaultImage: function defaultImage(e) {
+      e.target.src = "../images/default.png";
+    },
+    refreshData: function refreshData() {
+      var _this2 = this;
+
+      axios.get("/").then(function (response) {
+        _this2.people = response.data;
+      });
+    }
+  },
+  mounted: function mounted() {
+    this.loading = false;
+    this.refreshData();
+  },
+  watch: {}
 });
 
 /***/ }),
@@ -2005,14 +2172,15 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.20';
+  var VERSION = '4.17.21';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
 
   /** Error message constants. */
   var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',
-      FUNC_ERROR_TEXT = 'Expected a function';
+      FUNC_ERROR_TEXT = 'Expected a function',
+      INVALID_TEMPL_VAR_ERROR_TEXT = 'Invalid `variable` option passed into `_.template`';
 
   /** Used to stand-in for `undefined` hash values. */
   var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -2145,10 +2313,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
   var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
       reHasRegExpChar = RegExp(reRegExpChar.source);
 
-  /** Used to match leading and trailing whitespace. */
-  var reTrim = /^\s+|\s+$/g,
-      reTrimStart = /^\s+/,
-      reTrimEnd = /\s+$/;
+  /** Used to match leading whitespace. */
+  var reTrimStart = /^\s+/;
+
+  /** Used to match a single whitespace character. */
+  var reWhitespace = /\s/;
 
   /** Used to match wrap detail comments. */
   var reWrapComment = /\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,
@@ -2157,6 +2326,18 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
 
   /** Used to match words composed of alphanumeric characters. */
   var reAsciiWord = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
+
+  /**
+   * Used to validate the `validate` option in `_.template` variable.
+   *
+   * Forbids characters which could potentially change the meaning of the function argument definition:
+   * - "()," (modification of function parameters)
+   * - "=" (default value)
+   * - "[]{}" (destructuring of function parameters)
+   * - "/" (beginning of a comment)
+   * - whitespace
+   */
+  var reForbiddenIdentifierChars = /[()=,{}\[\]\/\s]/;
 
   /** Used to match backslashes in property paths. */
   var reEscapeChar = /\\(\\)?/g;
@@ -2987,6 +3168,19 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
   }
 
   /**
+   * The base implementation of `_.trim`.
+   *
+   * @private
+   * @param {string} string The string to trim.
+   * @returns {string} Returns the trimmed string.
+   */
+  function baseTrim(string) {
+    return string
+      ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+      : string;
+  }
+
+  /**
    * The base implementation of `_.unary` without support for storing metadata.
    *
    * @private
@@ -3317,6 +3511,21 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
     return hasUnicode(string)
       ? unicodeToArray(string)
       : asciiToArray(string);
+  }
+
+  /**
+   * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+   * character of `string`.
+   *
+   * @private
+   * @param {string} string The string to inspect.
+   * @returns {number} Returns the index of the last non-whitespace character.
+   */
+  function trimmedEndIndex(string) {
+    var index = string.length;
+
+    while (index-- && reWhitespace.test(string.charAt(index))) {}
+    return index;
   }
 
   /**
@@ -14487,7 +14696,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
       if (typeof value != 'string') {
         return value === 0 ? value : +value;
       }
-      value = value.replace(reTrim, '');
+      value = baseTrim(value);
       var isBinary = reIsBinary.test(value);
       return (isBinary || reIsOctal.test(value))
         ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
@@ -16859,6 +17068,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
       if (!variable) {
         source = 'with (obj) {\n' + source + '\n}\n';
       }
+      // Throw an error if a forbidden character was found in `variable`, to prevent
+      // potential command injection attacks.
+      else if (reForbiddenIdentifierChars.test(variable)) {
+        throw new Error(INVALID_TEMPL_VAR_ERROR_TEXT);
+      }
+
       // Cleanup code by stripping empty strings.
       source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source)
         .replace(reEmptyStringMiddle, '$1')
@@ -16972,7 +17187,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
     function trim(string, chars, guard) {
       string = toString(string);
       if (string && (guard || chars === undefined)) {
-        return string.replace(reTrim, '');
+        return baseTrim(string);
       }
       if (!string || !(chars = baseToString(chars))) {
         return string;
@@ -17007,7 +17222,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
     function trimEnd(string, chars, guard) {
       string = toString(string);
       if (string && (guard || chars === undefined)) {
-        return string.replace(reTrimEnd, '');
+        return string.slice(0, trimmedEndIndex(string) + 1);
       }
       if (!string || !(chars = baseToString(chars))) {
         return string;
@@ -19444,7 +19659,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "max-w-7xl mx-auto sm:px-6 lg:px-8" }, [
-    _c("h1", { staticClass: "text-5xl font-bold text-blue-500 mb-20" }, [
+    _c("h1", { staticClass: "text-5xl text-custom-color font-bold mb-20" }, [
       _vm._v("My Team")
     ]),
     _vm._v(" "),
@@ -19454,238 +19669,348 @@ var render = function() {
           _vm._v("Add new team member")
         ]),
         _vm._v(" "),
-        _c("form", { staticClass: "space-y-5" }, [
-          _vm._m(0),
-          _vm._v(" "),
-          _vm._m(1),
-          _vm._v(" "),
-          _c("div", [
-            _c(
-              "label",
+        _vm.success
+          ? _c(
+              "div",
               {
                 staticClass:
-                  "block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2",
-                attrs: { for: "photo" }
+                  "bg-green-400 rounded text-gray-700 p-2 my-4 text-center text-sm"
               },
-              [_vm._v("\n            Photo\n          ")]
-            ),
+              [_vm._v("\n        Team member added successfully\n      ")]
+            )
+          : _vm._e(),
+        _vm._v(" "),
+        _c(
+          "form",
+          {
+            staticClass: "space-y-5",
+            on: {
+              submit: function($event) {
+                $event.preventDefault()
+                return _vm.submitForm($event)
+              }
+            }
+          },
+          [
+            _c("div", [
+              _c(
+                "label",
+                {
+                  staticClass: "block text-sm font-medium text-gray-700",
+                  attrs: { for: "name" }
+                },
+                [_vm._v("Name")]
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "mt-1" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.form.name,
+                      expression: "form.name"
+                    }
+                  ],
+                  staticClass:
+                    "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 p-3 border rounded-md",
+                  attrs: {
+                    type: "text",
+                    name: "name",
+                    id: "name",
+                    placeholder: "Calvin Hawkins"
+                  },
+                  domProps: { value: _vm.form.name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.form, "name", $event.target.value)
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _vm.errors.name
+                  ? _c(
+                      "span",
+                      { staticClass: "text-red-500 text-sm italics" },
+                      [_vm._v(_vm._s(_vm.errors.name[0]))]
+                    )
+                  : _vm._e()
+              ])
+            ]),
             _vm._v(" "),
-            _c("div", { staticClass: "mt-1" }, [
+            _c("div", [
+              _c(
+                "label",
+                {
+                  staticClass: "block text-sm font-medium text-gray-700",
+                  attrs: { for: "email" }
+                },
+                [_vm._v("Email")]
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "mt-1" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.form.email,
+                      expression: "form.email"
+                    }
+                  ],
+                  staticClass:
+                    "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 p-3 border rounded-md",
+                  attrs: {
+                    type: "text",
+                    name: "email",
+                    id: "email",
+                    placeholder: "you@example.com"
+                  },
+                  domProps: { value: _vm.form.email },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.form, "email", $event.target.value)
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _vm.errors.email
+                ? _c("span", { staticClass: "text-red-500 text-sm italics" }, [
+                    _vm._v(_vm._s(_vm.errors.email[0]))
+                  ])
+                : _vm._e()
+            ]),
+            _vm._v(" "),
+            _c("div", [
+              _c(
+                "label",
+                {
+                  staticClass:
+                    "block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2",
+                  attrs: { for: "photo" }
+                },
+                [_vm._v("\n            Photo\n          ")]
+              ),
+              _vm._v(" "),
               _c(
                 "div",
                 {
-                  staticClass:
-                    "w-full flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
+                  staticClass: "mt-1",
+                  on: {
+                    dragover: function($event) {
+                      $event.preventDefault()
+                    },
+                    drop: [
+                      function($event) {
+                        $event.preventDefault()
+                      },
+                      _vm.fileDrop
+                    ]
+                  }
                 },
                 [
-                  _c("div", { staticClass: "space-y-1 text-center" }, [
-                    _c(
-                      "svg",
-                      {
-                        staticClass: "mx-auto h-12 w-12 text-gray-400",
-                        attrs: {
-                          stroke: "currentColor",
-                          fill: "none",
-                          viewBox: "0 0 48 48",
-                          "aria-hidden": "true"
-                        }
-                      },
-                      [
-                        _c("path", {
-                          attrs: {
-                            d:
-                              "M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02",
-                            "stroke-width": "2",
-                            "stroke-linecap": "round",
-                            "stroke-linejoin": "round"
-                          }
-                        })
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _vm._m(2),
-                    _vm._v(" "),
-                    _c("p", { staticClass: "text-xs text-gray-500" }, [
-                      _vm._v(
-                        "\n                  PNG, JPG, GIF up to 10MB\n                "
-                      )
-                    ])
-                  ])
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "w-full flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
+                    },
+                    [
+                      _c("div", { staticClass: "space-y-1 text-center" }, [
+                        _c("img", {
+                          directives: [
+                            {
+                              name: "show",
+                              rawName: "v-show",
+                              value: _vm.showPreview,
+                              expression: "showPreview"
+                            }
+                          ],
+                          staticClass: "w-12 h-12 mx-auto rounded",
+                          attrs: { src: _vm.imagePreview }
+                        }),
+                        _vm._v(" "),
+                        _c(
+                          "svg",
+                          {
+                            directives: [
+                              {
+                                name: "show",
+                                rawName: "v-show",
+                                value: !_vm.showPreview,
+                                expression: "!showPreview"
+                              }
+                            ],
+                            staticClass: "mx-auto h-12 w-12 text-gray-400",
+                            attrs: {
+                              stroke: "currentColor",
+                              fill: "none",
+                              viewBox: "0 0 48 48",
+                              "aria-hidden": "true"
+                            }
+                          },
+                          [
+                            _c("path", {
+                              attrs: {
+                                d:
+                                  "M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02",
+                                "stroke-width": "2",
+                                "stroke-linecap": "round",
+                                "stroke-linejoin": "round"
+                              }
+                            })
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "div",
+                          { staticClass: "flex text-sm text-gray-600" },
+                          [
+                            _c(
+                              "label",
+                              {
+                                staticClass:
+                                  "relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500",
+                                attrs: { for: "photo" }
+                              },
+                              [
+                                _c("span", [_vm._v("Upload a file")]),
+                                _vm._v(" "),
+                                _c("input", {
+                                  staticClass: "sr-only",
+                                  attrs: {
+                                    id: "photo",
+                                    name: "photo",
+                                    type: "file"
+                                  },
+                                  on: { change: _vm.onFileChange }
+                                })
+                              ]
+                            ),
+                            _vm._v(" "),
+                            _c("p", { staticClass: "pl-1" }, [
+                              _vm._v("or drag and drop")
+                            ])
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c("p", { staticClass: "text-xs text-gray-500" }, [
+                          _vm._v("JPG only up to 10MB")
+                        ])
+                      ])
+                    ]
+                  )
                 ]
-              )
+              ),
+              _vm._v(" "),
+              _vm.errors.photo
+                ? _c("span", { staticClass: "text-red-500 text-sm italics" }, [
+                    _vm._v(_vm._s(_vm.errors.photo[0]))
+                  ])
+                : _vm._e()
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "flex items-center" }, [
+              _vm.submitting
+                ? _c(
+                    "button",
+                    {
+                      staticClass:
+                        "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-400",
+                      attrs: { disabled: "" }
+                    },
+                    [
+                      _c(
+                        "svg",
+                        {
+                          staticClass:
+                            "animate-spin -ml-1 mr-3 h-5 w-5 text-white",
+                          attrs: {
+                            xmlns: "http://www.w3.org/2000/svg",
+                            fill: "none",
+                            viewBox: "0 0 24 24"
+                          }
+                        },
+                        [
+                          _c("circle", {
+                            staticClass: "opacity-25",
+                            attrs: {
+                              cx: "12",
+                              cy: "12",
+                              r: "10",
+                              stroke: "currentColor",
+                              "stroke-width": "4"
+                            }
+                          }),
+                          _vm._v(" "),
+                          _c("path", {
+                            staticClass: "opacity-75",
+                            attrs: {
+                              fill: "currentColor",
+                              d:
+                                "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            }
+                          })
+                        ]
+                      ),
+                      _vm._v("\n            Submitting...\n          ")
+                    ]
+                  )
+                : _c(
+                    "button",
+                    {
+                      staticClass:
+                        "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+                      attrs: { type: "submit" }
+                    },
+                    [_vm._v("\n            Submit\n          ")]
+                  )
             ])
-          ]),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass:
-                "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
-              attrs: { type: "button" }
-            },
-            [_vm._v("\n          Submit\n        ")]
-          )
-        ])
+          ]
+        )
       ]),
       _vm._v(" "),
-      _vm._m(3)
+      _c("div", [
+        _vm.loading ? _c("p", [_vm._v("Loading team members...")]) : _vm._e(),
+        _vm._v(" "),
+        _c(
+          "ul",
+          { staticClass: "divide-y divide-gray-200" },
+          _vm._l(_vm.people, function(member, index) {
+            return _c("li", { key: index, staticClass: "py-4 flex" }, [
+              _c("img", {
+                staticClass: "h-10 w-10 rounded-full",
+                attrs: { src: member.photo, alt: "" },
+                on: { error: _vm.defaultImage }
+              }),
+              _vm._v(" "),
+              _c("div", { staticClass: "ml-3" }, [
+                _c("p", { staticClass: "text-sm font-medium text-gray-900" }, [
+                  _vm._v(
+                    "\n              " + _vm._s(member.email) + "\n            "
+                  )
+                ]),
+                _vm._v(" "),
+                _c("p", { staticClass: "text-sm text-gray-500" }, [
+                  _vm._v(_vm._s(member.name))
+                ])
+              ])
+            ])
+          }),
+          0
+        )
+      ])
     ])
   ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c(
-        "label",
-        {
-          staticClass: "block text-sm font-medium text-gray-700",
-          attrs: { for: "name" }
-        },
-        [_vm._v("Name")]
-      ),
-      _vm._v(" "),
-      _c("div", { staticClass: "mt-1" }, [
-        _c("input", {
-          staticClass:
-            "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 p-3 border rounded-md",
-          attrs: {
-            type: "text",
-            name: "name",
-            id: "name",
-            placeholder: "Calvin Hawkins"
-          }
-        })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c(
-        "label",
-        {
-          staticClass: "block text-sm font-medium text-gray-700",
-          attrs: { for: "email" }
-        },
-        [_vm._v("Email")]
-      ),
-      _vm._v(" "),
-      _c("div", { staticClass: "mt-1" }, [
-        _c("input", {
-          staticClass:
-            "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 p-3 border rounded-md",
-          attrs: {
-            type: "text",
-            name: "email",
-            id: "email",
-            placeholder: "you@example.com"
-          }
-        })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "flex text-sm text-gray-600" }, [
-      _c(
-        "label",
-        {
-          staticClass:
-            "relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500",
-          attrs: { for: "file-upload" }
-        },
-        [
-          _c("span", [_vm._v("Upload a file")]),
-          _vm._v(" "),
-          _c("input", {
-            staticClass: "sr-only",
-            attrs: { id: "file-upload", name: "file-upload", type: "file" }
-          })
-        ]
-      ),
-      _vm._v(" "),
-      _c("p", { staticClass: "pl-1" }, [_vm._v("or drag and drop")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("ul", { staticClass: "divide-y divide-gray-200" }, [
-        _c("li", { staticClass: "py-4 flex" }, [
-          _c("img", {
-            staticClass: "h-10 w-10 rounded-full",
-            attrs: {
-              src:
-                "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-              alt: ""
-            }
-          }),
-          _vm._v(" "),
-          _c("div", { staticClass: "ml-3" }, [
-            _c("p", { staticClass: "text-sm font-medium text-gray-900" }, [
-              _vm._v("Calvin Hawkins")
-            ]),
-            _vm._v(" "),
-            _c("p", { staticClass: "text-sm text-gray-500" }, [
-              _vm._v("calvin.hawkins@example.com")
-            ])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "py-4 flex" }, [
-          _c("img", {
-            staticClass: "h-10 w-10 rounded-full",
-            attrs: {
-              src:
-                "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-              alt: ""
-            }
-          }),
-          _vm._v(" "),
-          _c("div", { staticClass: "ml-3" }, [
-            _c("p", { staticClass: "text-sm font-medium text-gray-900" }, [
-              _vm._v("Kristen Ramos")
-            ]),
-            _vm._v(" "),
-            _c("p", { staticClass: "text-sm text-gray-500" }, [
-              _vm._v("kristen.ramos@example.com")
-            ])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "py-4 flex" }, [
-          _c("img", {
-            staticClass: "h-10 w-10 rounded-full",
-            attrs: {
-              src:
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-              alt: ""
-            }
-          }),
-          _vm._v(" "),
-          _c("div", { staticClass: "ml-3" }, [
-            _c("p", { staticClass: "text-sm font-medium text-gray-900" }, [
-              _vm._v("Ted Fox")
-            ]),
-            _vm._v(" "),
-            _c("p", { staticClass: "text-sm text-gray-500" }, [
-              _vm._v("ted.fox@example.com")
-            ])
-          ])
-        ])
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
