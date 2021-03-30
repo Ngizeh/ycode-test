@@ -6,7 +6,6 @@
 
 ```
 
-
 Navigate to the project folder
 
 ```
@@ -19,24 +18,6 @@ On the project folder run the following command on the terminal
  composer install
 ```
 
-
-- Copy `.env.example` contents to `.env` 
-
-Install the project dependencies
-
-
-```
- npm install && npm run dev
-```
-
- or
-
- If you have yarn installed
-
-```
- yarn install && yarn run dev
-```
-
 - Copy `.env.example` contents to `.env` 
 
 - Add your Airtable API KEY and fill your values
@@ -47,6 +28,8 @@ Install the project dependencies
 
 - Run this command on your terminal
 (`php artisan key:generate`)
+
+- Run `php artisan clear:cache` to clear cached data
 
 Finally,serve your Application on localhost:) http://localhost:8000
 - If you don't have valet installed in your machine. Use this command on your terminal
