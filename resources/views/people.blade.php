@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/css/app.css">
+        <link rel="icon" href="data:;base64,=">
     </head>
     <body class="py-20">
         <div id="app">
-            <people-component></people-component>
-        </div>
+            <people-component :team = "{{ $team }}"></people-component>
+        </div> 
         <script src="{{ asset('js/app.js') }}"></script>
     </body>
 </html>

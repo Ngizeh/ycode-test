@@ -12,7 +12,20 @@ class PeopleController extends Controller
 
 	public function index()
 	{
-		return view('people');
+		$table = collect(Cache::get('client'))->flatten(1)->reverse()->pluck('fields');
+
+		$team = $table->map(function ($data) {
+			return [
+				'name' => $data['Name'],
+				'email' => $data['Email'],
+				'photo' => $data['Photo'][0]['url'] ?? ""
+			];
+		});
+
+		if (request()->wantsJson()) {
+			return $team;
+		}
+		return view('people', compact('team'));
 	}
 
 	public function store(PeopleRequest $request)
