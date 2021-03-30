@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PeopleRequest;
+
 class PeopleController extends Controller
 {
 
@@ -9,5 +11,11 @@ class PeopleController extends Controller
 	{
 		return view('people');
 	}
+
+	public function store(PeopleRequest $request)
+	{
+		return response()->json([], 201);
+	}
+	
 
 }
