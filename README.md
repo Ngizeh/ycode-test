@@ -20,10 +20,12 @@ On the project folder run the following command on the terminal
 
 - Copy `.env.example` contents to `.env` 
 
-- Add your Airtable API KEY and fill your values
+- Add your Airtable API KEY and fill your values. The grid table name should be inside the quotes
 
 ```
     AIRTABLE_KEY=//YOUR API KEY
+    AIRTABLE_ID=//YOUR API ID
+    AIRTABLE_TABLE="//YOUR AIRTABLE BASE NAME"
 ```
 
 - Run this command on your terminal

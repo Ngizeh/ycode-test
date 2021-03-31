@@ -2,14 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\People;
 use App\Http\Requests\PeopleRequest;
-use Illuminate\Support\Facades\Http;
+use App\Models\People;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+
 
 class PeopleController extends Controller
 {
-
+    /**
+     * Get all the cached data from Air API
+     * @return View|Response|Collection
+     */
 	public function index()
 	{
 		$table = collect(Cache::get('client'))->flatten(1)->reverse()->pluck('fields');
@@ -25,13 +33,19 @@ class PeopleController extends Controller
 		if (request()->wantsJson()) {
 			return $team;
 		}
+
 		return view('people', compact('team'));
 	}
 
-	public function store(PeopleRequest $request)
-	{
+    /**
+     * Store data in Airtable via API
+     * @param PeopleRequest $request
+     * @return JsonResponse
+     */
+	public function store(PeopleRequest $request): JsonResponse
+    {
 		$response = Http::withToken(config('services.airtable.key'))
-			->post("https://api.airtable.com/v0/app6UanNZ7ntT5a08/Grid%20view", [
+			->post("https://api.airtable.com/v0/{config('services.airtable.id')}/{config('services.airtable.table')", [
 				"fields" => [
 					"Name" => request('name'),
 					"Email" => request('email'),
@@ -44,6 +58,11 @@ class PeopleController extends Controller
 		return response()->json($response, 201);
 	}
 
+	/*
+	 * Check where weather file is uploaded and return path
+	 *
+	 * @return string
+	 */
 	private function hasFile($request)
 	{
 		if ($request->hasFile('photo')) {
@@ -52,6 +71,11 @@ class PeopleController extends Controller
 		}
 		return '';
 	}
+
+	/**
+	 * Clears and sets the cache
+     * @return void
+	 */
 
 	private function clearAndSetCache()
 	{

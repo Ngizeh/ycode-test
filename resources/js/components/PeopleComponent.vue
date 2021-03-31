@@ -104,7 +104,8 @@
             }}</span>
           </div>
           <div class="flex items-center">
-            <button disabled
+            <button
+              disabled
               v-if="submitting"
               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-400"
             >
@@ -186,10 +187,18 @@ export default {
   },
   methods: {
     onFileChange(event) {
+      /**
+       * Get uploaded file on change input submit and renders in the view
+       * @type [file]
+       */
       this.form.photo = event.target.files[0];
       this.reader();
     },
     reader() {
+      /**
+       * Reads the and display on the view and validates it
+       * @type {FileReader}
+       */
       let reader = new FileReader();
       reader.addEventListener(
         "load",
@@ -206,10 +215,18 @@ export default {
       }
     },
     fileDrop(e) {
+      /**
+       * Drags and drop the file
+       * @type {File}
+       */
       this.form.photo = e.dataTransfer.files[0];
       this.reader();
     },
     submitForm() {
+      /**
+       * Submitting the form and gives the view feedback
+       * @type {boolean}
+       */
       this.submitting = true;
       let data = new FormData();
       const config = {
@@ -237,15 +254,27 @@ export default {
         });
     },
     defaultImage(e) {
+      /**
+       * Path for default image in case of there's no image found
+       * @type {string}
+       */
       e.target.src = "../images/default.png";
     },
     refreshData() {
+      /**
+       * Gets the data from Airtable API
+       * @type [array]
+       */
       axios.get("/").then((response) => {
         this.people = response.data;
       });
     },
   },
   mounted() {
+     /**
+       * Loading the data on Application when component is mounted
+       * @type {boolean, array}
+       */
     this.loading = false;
     this.refreshData();
   },

@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class People extends Model
 {
-    use HasFactory;
-
+    /**
+     * Gets the Data from AirTable and cache it
+     * @return Cache
+     */
     public static function cachePeople()
-	{
+    {
 		$client = Http::withToken(config('services.airtable.key'))
-        ->get("https://api.airtable.com/v0/app6UanNZ7ntT5a08/Grid%20view?maxRecords=9&view=Grid%20view");
+        ->get("https://api.airtable.com/v0/{config('services.airtable.id')}/{config(services.airtable.table')?maxRecords=9&view={config(services.airtable.table')");
 
-		Cache::rememberForever('client', function () use ($client){
-			return $client->json();
-		});
+		Cache::rememberForever('client', function () use ($client) {
+            return $client->json();
+        });
 	}
 }

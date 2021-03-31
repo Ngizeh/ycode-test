@@ -31,7 +31,9 @@ return [
     ],
 
     'airtable' => [
-        'key' => env('AIRTABLE_KEY')
+        'key' => env('AIRTABLE_KEY'),
+        'id' => env('AIRTABLE_ID'),
+        'table' => env('AIRTABLE_TABLE')
     ]
 
 ];
