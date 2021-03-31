@@ -15,7 +15,7 @@ class People extends Model
     public static function cachePeople()
     {
 		$client = Http::withToken(config('services.airtable.key'))
-        ->get("https://api.airtable.com/v0/{config('services.airtable.id')}/{config(services.airtable.table')?maxRecords=9&view={config(services.airtable.table')");
+        ->get("https://api.airtable.com/v0/".config('services.airtable.id')."/".config('services.airtable.table')."/?maxRecords=9&view=".config('services.airtable.table'));
 
 		Cache::rememberForever('client', function () use ($client) {
             return $client->json();

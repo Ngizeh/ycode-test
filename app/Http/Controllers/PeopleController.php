@@ -45,7 +45,7 @@ class PeopleController extends Controller
 	public function store(PeopleRequest $request): JsonResponse
     {
 		$response = Http::withToken(config('services.airtable.key'))
-			->post("https://api.airtable.com/v0/{config('services.airtable.id')}/{config('services.airtable.table')", [
+			->post("https://api.airtable.com/v0/".config('services.airtable.id')."/".config('services.airtable.table'), [
 				"fields" => [
 					"Name" => request('name'),
 					"Email" => request('email'),
